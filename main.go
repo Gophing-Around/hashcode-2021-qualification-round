@@ -27,7 +27,7 @@ func main() {
 
 		output := buildOutput(result)
 		printResultMetrics(result)
-		
+
 		ioutil.WriteFile(fmt.Sprintf("./result/%s.out", fileName), []byte(output), 0644)
 	}
 }
