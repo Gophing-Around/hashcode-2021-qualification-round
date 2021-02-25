@@ -1,5 +1,10 @@
 package main
 
+import (
+	"fmt"
+	"sort"
+)
+
 type StreetTime struct {
 	name               string
 	greenLigthDuration int
@@ -38,6 +43,10 @@ func algorithm(
 		}
 	}
 
+	sort.Slice(intersectionsList, func(i, j int) bool {
+		return intersectionsList[i].arrivingCars > intersectionsList[j].arrivingCars
+	})
+
 	visited := make(map[int]bool)
 	for _, intersection := range intersectionsList {
 		dfs(
@@ -56,6 +65,7 @@ func algorithm(
 
 		for _, street := range intersection.incomingStreets {
 			totScore += int(street.score)
+			fmt.Printf("STREET %s - score: %d.\n", street.name, street.score)
 		}
 		if totScore == 0 {
 			continue
@@ -99,7 +109,10 @@ func dfs(
 
 	// score += intersection.arrivingCars // TODO
 
-	for streetName, incomingStreet := range intersection.incomingStreets {
+	for _, streetName := range intersection.incomingStreetsNames {
+
+		incomingStreet := intersection.incomingStreets[streetName]
+
 		streetScore := dfs(
 			visited,
 			remainingTime-incomingStreet.timeNeeded,

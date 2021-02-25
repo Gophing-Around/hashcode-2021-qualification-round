@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"sort"
+)
 
 type Config struct {
 	simuDuration  int
@@ -24,10 +27,12 @@ type CarsPaths struct {
 }
 
 type Intersection struct {
-	id               int
-	arrivingCars     int
-	incomingStreets  map[string]*Street
-	outcomingStreets map[string]*Street
+	id                    int
+	arrivingCars          int
+	incomingStreets       map[string]*Street
+	incomingStreetsNames  []string
+	outcomingStreets      map[string]*Street
+	outcomingStreetsNames []string
 }
 
 func buildConfig(inputSet string) Config {
@@ -63,8 +68,10 @@ func buildStreets(c Config, lines []string) ([]*Street, map[string]*Street, map[
 		if intersectionA.outcomingStreets == nil {
 			intersectionA.id = street.startIntersection
 			intersectionA.outcomingStreets = make(map[string]*Street)
+			intersectionA.outcomingStreetsNames = make([]string, 0)
 		}
 		intersectionA.outcomingStreets[street.name] = street
+		intersectionA.outcomingStreetsNames = append(intersectionA.outcomingStreetsNames, street.name)
 		intersectionMap[street.startIntersection] = intersectionA
 
 		intersectionB := intersectionMap[street.endIntersection]
@@ -74,16 +81,40 @@ func buildStreets(c Config, lines []string) ([]*Street, map[string]*Street, map[
 		if intersectionB.incomingStreets == nil {
 			intersectionB.id = street.endIntersection
 			intersectionB.incomingStreets = make(map[string]*Street)
+			intersectionB.incomingStreetsNames = make([]string, 0)
 		}
 		intersectionB.incomingStreets[street.name] = street
+		intersectionB.incomingStreetsNames = append(intersectionB.incomingStreetsNames, street.name)
 		intersectionMap[street.endIntersection] = intersectionB
 
 		streets[i] = street
 		streetMap[parts[2]] = street
 	}
 
-	for _, intersection := range intersectionMap {
+	for intersectionID, intersection := range intersectionMap {
 		intersectionsList = append(intersectionsList, intersection)
+
+		sort.Slice(intersection.incomingStreetsNames, func(i, j int) bool {
+			streetNameA := intersection.incomingStreetsNames[i]
+			streetATime := intersection.incomingStreets[streetNameA].timeNeeded
+
+			streetNameB := intersection.incomingStreetsNames[j]
+			streetBTime := intersection.incomingStreets[streetNameB].timeNeeded
+
+			return streetATime > streetBTime
+		})
+		intersectionMap[intersectionID] = intersection
+
+		sort.Slice(intersection.outcomingStreetsNames, func(i, j int) bool {
+			streetNameA := intersection.outcomingStreetsNames[i]
+			streetATime := intersection.outcomingStreets[streetNameA].timeNeeded
+
+			streetNameB := intersection.outcomingStreetsNames[j]
+			streetBTime := intersection.outcomingStreets[streetNameB].timeNeeded
+
+			return streetATime > streetBTime
+		})
+		intersectionMap[intersectionID] = intersection
 	}
 
 	return streets, streetMap, intersectionMap, intersectionsList
