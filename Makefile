@@ -12,4 +12,4 @@ ultraclean: clean
 	rm -rf result/*.out *.zip
 
 zip:
-	zip out.zip *.go
+	zip result/out.zip *.go
