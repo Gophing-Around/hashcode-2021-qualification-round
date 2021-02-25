@@ -39,14 +39,16 @@ func algorithm(
 	}
 
 	visited := make(map[int]bool)
-	dfs(
-		visited,
-		config.simuDuration,
-		intersectionsList[0],
-		intersectionsList[0].arrivingCars,
-		intersectionsList[0],
-		intersectionMap,
-	)
+	for _, intersection := range intersectionsList {
+		dfs(
+			visited,
+			config.simuDuration,
+			intersection,
+			intersection.arrivingCars,
+			intersection,
+			intersectionMap,
+		)
+	}
 
 	for _, intersection := range intersectionsList {
 		streetTimes := make([]StreetTime, 0)
@@ -113,7 +115,7 @@ func dfs(
 		intersection.incomingStreets[streetName] = incomingStreet
 	}
 
-	visited[intersection.id] = false
+	// visited[intersection.id] = false
 	return score
 }
 
