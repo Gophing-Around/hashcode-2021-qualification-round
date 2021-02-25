@@ -29,9 +29,11 @@ func algorithm(
 	for _, carPath := range carsPaths {
 		var intersectionId int
 		var totTime int
-		for _, street := range carPath.streetNames {
-			street := streetsMap[street]
+		for _, streetName := range carPath.streetNames {
+			street := streetsMap[streetName]
 			totTime += street.timeNeeded
+			street.passingCars++
+			streetsMap[streetName] = street
 
 			intersectionId = street.endIntersection
 		}
@@ -43,12 +45,38 @@ func algorithm(
 		}
 	}
 
+	for intersectionID, intersection := range intersectionMap {
+		intersectionsList = append(intersectionsList, intersection)
+
+		sort.Slice(intersection.incomingStreetsNames, func(i, j int) bool {
+			streetNameA := intersection.incomingStreetsNames[i]
+			streetATime := intersection.incomingStreets[streetNameA].passingCars
+
+			streetNameB := intersection.incomingStreetsNames[j]
+			streetBTime := intersection.incomingStreets[streetNameB].passingCars
+
+			return streetATime > streetBTime
+		})
+		intersectionMap[intersectionID] = intersection
+
+		sort.Slice(intersection.outcomingStreetsNames, func(i, j int) bool {
+			streetNameA := intersection.outcomingStreetsNames[i]
+			streetATime := intersection.outcomingStreets[streetNameA].passingCars
+
+			streetNameB := intersection.outcomingStreetsNames[j]
+			streetBTime := intersection.outcomingStreets[streetNameB].passingCars
+
+			return streetATime > streetBTime
+		})
+		intersectionMap[intersectionID] = intersection
+	}
+
 	sort.Slice(intersectionsList, func(i, j int) bool {
 		return intersectionsList[i].arrivingCars > intersectionsList[j].arrivingCars
 	})
 
-	visited := make(map[int]bool)
 	for _, intersection := range intersectionsList {
+		visited := make(map[int]bool)
 		dfs(
 			visited,
 			config.simuDuration,
@@ -113,18 +141,20 @@ func dfs(
 
 		incomingStreet := intersection.incomingStreets[streetName]
 
+		arrivingCars := intersectionMap[incomingStreet.startIntersection].arrivingCars
+
 		streetScore := dfs(
 			visited,
 			remainingTime-incomingStreet.timeNeeded,
 			// incomingStreet,
 			intersectionMap[incomingStreet.startIntersection],
-			score+int(intersectionMap[incomingStreet.startIntersection].arrivingCars),
+			score+arrivingCars,
 
 			startIntersection,
 			intersectionMap,
 		)
 		// score += streetScore
-		incomingStreet.score = streetScore
+		incomingStreet.score += streetScore
 		intersection.incomingStreets[streetName] = incomingStreet
 	}
 

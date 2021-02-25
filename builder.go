@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"sort"
 )
 
 type Config struct {
@@ -19,11 +18,14 @@ type Street struct {
 	name              string
 	timeNeeded        int
 	score             int
+	passingCars       int
 }
 
 type CarsPaths struct {
-	nStreets    int
-	streetNames []string
+	nStreets        int
+	streetNames     []string
+	currentIndex    int
+	newCurrentIndex int
 }
 
 type Intersection struct {
@@ -89,32 +91,6 @@ func buildStreets(c Config, lines []string) ([]*Street, map[string]*Street, map[
 
 		streets[i] = street
 		streetMap[parts[2]] = street
-	}
-
-	for intersectionID, intersection := range intersectionMap {
-		intersectionsList = append(intersectionsList, intersection)
-
-		sort.Slice(intersection.incomingStreetsNames, func(i, j int) bool {
-			streetNameA := intersection.incomingStreetsNames[i]
-			streetATime := intersection.incomingStreets[streetNameA].timeNeeded
-
-			streetNameB := intersection.incomingStreetsNames[j]
-			streetBTime := intersection.incomingStreets[streetNameB].timeNeeded
-
-			return streetATime > streetBTime
-		})
-		intersectionMap[intersectionID] = intersection
-
-		sort.Slice(intersection.outcomingStreetsNames, func(i, j int) bool {
-			streetNameA := intersection.outcomingStreetsNames[i]
-			streetATime := intersection.outcomingStreets[streetNameA].timeNeeded
-
-			streetNameB := intersection.outcomingStreetsNames[j]
-			streetBTime := intersection.outcomingStreets[streetNameB].timeNeeded
-
-			return streetATime > streetBTime
-		})
-		intersectionMap[intersectionID] = intersection
 	}
 
 	return streets, streetMap, intersectionMap, intersectionsList
