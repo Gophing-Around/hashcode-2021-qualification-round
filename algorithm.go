@@ -1,9 +1,5 @@
 package main
 
-import (
-	"fmt"
-)
-
 type StreetTime struct {
 	name               string
 	greenLigthDuration int
@@ -28,11 +24,9 @@ func algorithm(
 	for _, carPath := range carsPaths {
 		var intersectionId int
 		var totTime int
-		for _, streetName := range carPath.streetNames {
-			street := streetsMap[streetName]
+		for _, street := range carPath.streetNames {
+			street := streetsMap[street]
 			totTime += street.timeNeeded
-			street.passingCars++
-			streetsMap[streetName] = street
 
 			intersectionId = street.endIntersection
 		}
@@ -62,7 +56,6 @@ func algorithm(
 
 		for _, street := range intersection.incomingStreets {
 			totScore += int(street.score)
-			fmt.Printf("STREET %s - score: %d.\n", street.name, street.score)
 		}
 		if totScore == 0 {
 			continue
@@ -111,24 +104,19 @@ func dfs(
 
 	// score += intersection.arrivingCars // TODO
 
-	for _, streetName := range intersection.incomingStreetsNames {
-
-		incomingStreet := intersection.incomingStreets[streetName]
-
-		arrivingCars := intersectionMap[incomingStreet.startIntersection].arrivingCars
-
+	for streetName, incomingStreet := range intersection.incomingStreets {
 		streetScore := dfs(
 			visited,
 			remainingTime-incomingStreet.timeNeeded,
 			// incomingStreet,
 			intersectionMap[incomingStreet.startIntersection],
-			score+arrivingCars,
+			score+int(intersectionMap[incomingStreet.startIntersection].arrivingCars),
 
 			startIntersection,
 			intersectionMap,
 		)
 		// score += streetScore
-		incomingStreet.score += streetScore
+		incomingStreet.score = streetScore
 		intersection.incomingStreets[streetName] = incomingStreet
 	}
 

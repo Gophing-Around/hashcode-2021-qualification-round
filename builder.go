@@ -1,8 +1,6 @@
 package main
 
-import (
-	"fmt"
-)
+import "fmt"
 
 type Config struct {
 	simuDuration  int
@@ -18,23 +16,18 @@ type Street struct {
 	name              string
 	timeNeeded        int
 	score             int
-	passingCars       int
 }
 
 type CarsPaths struct {
-	nStreets        int
-	streetNames     []string
-	currentIndex    int
-	newCurrentIndex int
+	nStreets    int
+	streetNames []string
 }
 
 type Intersection struct {
-	id                    int
-	arrivingCars          int
-	incomingStreets       map[string]*Street
-	incomingStreetsNames  []string
-	outcomingStreets      map[string]*Street
-	outcomingStreetsNames []string
+	id               int
+	arrivingCars     int
+	incomingStreets  map[string]*Street
+	outcomingStreets map[string]*Street
 }
 
 func buildConfig(inputSet string) Config {
@@ -70,10 +63,8 @@ func buildStreets(c Config, lines []string) ([]*Street, map[string]*Street, map[
 		if intersectionA.outcomingStreets == nil {
 			intersectionA.id = street.startIntersection
 			intersectionA.outcomingStreets = make(map[string]*Street)
-			intersectionA.outcomingStreetsNames = make([]string, 0)
 		}
 		intersectionA.outcomingStreets[street.name] = street
-		intersectionA.outcomingStreetsNames = append(intersectionA.outcomingStreetsNames, street.name)
 		intersectionMap[street.startIntersection] = intersectionA
 
 		intersectionB := intersectionMap[street.endIntersection]
@@ -83,14 +74,16 @@ func buildStreets(c Config, lines []string) ([]*Street, map[string]*Street, map[
 		if intersectionB.incomingStreets == nil {
 			intersectionB.id = street.endIntersection
 			intersectionB.incomingStreets = make(map[string]*Street)
-			intersectionB.incomingStreetsNames = make([]string, 0)
 		}
 		intersectionB.incomingStreets[street.name] = street
-		intersectionB.incomingStreetsNames = append(intersectionB.incomingStreetsNames, street.name)
 		intersectionMap[street.endIntersection] = intersectionB
 
 		streets[i] = street
 		streetMap[parts[2]] = street
+	}
+
+	for _, intersection := range intersectionMap {
+		intersectionsList = append(intersectionsList, intersection)
 	}
 
 	return streets, streetMap, intersectionMap, intersectionsList
