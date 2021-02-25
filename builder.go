@@ -15,6 +15,7 @@ type Street struct {
 	endIntersection   int
 	name              string
 	timeNeeded        int
+	score             int
 }
 
 type CarsPaths struct {
@@ -23,6 +24,8 @@ type CarsPaths struct {
 }
 
 type Intersection struct {
+	id               int
+	arrivingCars     int
 	incomingStreets  map[string]*Street
 	outcomingStreets map[string]*Street
 }
@@ -38,10 +41,11 @@ func buildConfig(inputSet string) Config {
 	}
 }
 
-func buildStreets(c Config, lines []string) ([]*Street, map[string]*Street, map[int]*Intersection) {
+func buildStreets(c Config, lines []string) ([]*Street, map[string]*Street, map[int]*Intersection, []*Intersection) {
 	streets := make([]*Street, c.nStreets)
 	streetMap := make(map[string]*Street, 0)
 	intersectionMap := make(map[int]*Intersection)
+	intersectionsList := make([]*Intersection, 0)
 
 	for i := 0; i < c.nStreets; i++ {
 		parts := splitSpaces(lines[i])
@@ -57,6 +61,7 @@ func buildStreets(c Config, lines []string) ([]*Street, map[string]*Street, map[
 			intersectionA = &Intersection{}
 		}
 		if intersectionA.outcomingStreets == nil {
+			intersectionA.id = street.startIntersection
 			intersectionA.outcomingStreets = make(map[string]*Street)
 		}
 		intersectionA.outcomingStreets[street.name] = street
@@ -67,6 +72,7 @@ func buildStreets(c Config, lines []string) ([]*Street, map[string]*Street, map[
 			intersectionB = &Intersection{}
 		}
 		if intersectionB.incomingStreets == nil {
+			intersectionB.id = street.endIntersection
 			intersectionB.incomingStreets = make(map[string]*Street)
 		}
 		intersectionB.incomingStreets[street.name] = street
@@ -75,7 +81,12 @@ func buildStreets(c Config, lines []string) ([]*Street, map[string]*Street, map[
 		streets[i] = street
 		streetMap[parts[2]] = street
 	}
-	return streets, streetMap, intersectionMap
+
+	for _, intersection := range intersectionMap {
+		intersectionsList = append(intersectionsList, intersection)
+	}
+
+	return streets, streetMap, intersectionMap, intersectionsList
 }
 
 func buildCarsPaths(c Config, lines []string) []*CarsPaths {

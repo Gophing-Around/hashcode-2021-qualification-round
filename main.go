@@ -29,18 +29,25 @@ func main() {
 		config := buildConfig(fileLines[0])
 		// fmt.Printf("%+v\n", config)
 
-		streets, streetsMap, intersectionMap := buildStreets(config, fileLines[1:])
-		// fmt.Printf("%+v\n", intersectionMap)
-		// fmt.Printf("%+v\n", streets)
+		streets, streetsMap, intersectionMap, intersectionsList := buildStreets(config, fileLines[1:])
 		carsPaths := buildCarsPaths(config, fileLines[1+config.nStreets:])
-		// fmt.Printf("%+v\n", carsPaths)
+
+		intersectionsList = sortIntersections(intersectionsList)
 
 		// printInputMetrics(input)
-		outputs := algorithm(config, streets, carsPaths, streetsMap, intersectionMap)
+		outputs := algorithm(config, streets, carsPaths, streetsMap, intersectionMap, intersectionsList)
 
 		result := buildOutput(outputs)
 		// printResultMetrics(result)
 
 		ioutil.WriteFile(fmt.Sprintf("./result/%s.txt", fileName), []byte(result), 0644)
 	}
+}
+
+func sortIntersections(list []*Intersection) []*Intersection {
+	// sort.Slice(list, function(i,j) bool {
+	// 	// return len(list[i].outcomingStreets) >
+
+	// })
+	return list
 }
