@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"sort"
 )
 
 type StreetTime struct {
@@ -45,36 +44,6 @@ func algorithm(
 		}
 	}
 
-	for intersectionID, intersection := range intersectionMap {
-		intersectionsList = append(intersectionsList, intersection)
-
-		sort.Slice(intersection.incomingStreetsNames, func(i, j int) bool {
-			streetNameA := intersection.incomingStreetsNames[i]
-			streetATime := intersection.incomingStreets[streetNameA].passingCars
-
-			streetNameB := intersection.incomingStreetsNames[j]
-			streetBTime := intersection.incomingStreets[streetNameB].passingCars
-
-			return streetATime > streetBTime
-		})
-		intersectionMap[intersectionID] = intersection
-
-		sort.Slice(intersection.outcomingStreetsNames, func(i, j int) bool {
-			streetNameA := intersection.outcomingStreetsNames[i]
-			streetATime := intersection.outcomingStreets[streetNameA].passingCars
-
-			streetNameB := intersection.outcomingStreetsNames[j]
-			streetBTime := intersection.outcomingStreets[streetNameB].passingCars
-
-			return streetATime > streetBTime
-		})
-		intersectionMap[intersectionID] = intersection
-	}
-
-	sort.Slice(intersectionsList, func(i, j int) bool {
-		return intersectionsList[i].arrivingCars > intersectionsList[j].arrivingCars
-	})
-
 	for _, intersection := range intersectionsList {
 		visited := make(map[int]bool)
 		dfs(
@@ -99,6 +68,11 @@ func algorithm(
 			continue
 		}
 
+		a := len(intersection.incomingStreets) / len(intersection.outcomingStreets)
+		if a == 0 {
+			a = 1
+		}
+
 		for _, street := range intersection.incomingStreets {
 			if street.score == 0 {
 				continue
@@ -106,7 +80,7 @@ func algorithm(
 
 			streetTimes = append(streetTimes, StreetTime{
 				name:               street.name,
-				greenLigthDuration: int(street.score) * config.simuDuration / totScore, // / len(intersection.incomingStreets),
+				greenLigthDuration: a, // / len(intersection.incomingStreets),
 			})
 		}
 
@@ -129,7 +103,7 @@ func dfs(
 
 	intersectionMap map[int]*Intersection,
 ) int {
-	if visited := visited[intersection.id]; visited || remainingTime < 0 {
+	if visited := visited[intersection.id]; visited {
 		return score
 	}
 

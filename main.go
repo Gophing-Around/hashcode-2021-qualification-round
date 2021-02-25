@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"sort"
 
 	"github.com/fredmaggiowski/gowq"
 )
@@ -45,9 +46,8 @@ func main() {
 }
 
 func sortIntersections(list []*Intersection) []*Intersection {
-	// sort.Slice(list, function(i,j) bool {
-	// 	// return len(list[i].outcomingStreets) >
-
-	// })
+	sort.Slice(list, func(i, j int) bool {
+		return len(list[i].outcomingStreets) > len(list[j].outcomingStreets)
+	})
 	return list
 }
