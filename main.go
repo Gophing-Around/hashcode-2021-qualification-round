@@ -38,17 +38,7 @@ func main() {
 		// printInputMetrics(input)
 		outputs := algorithm(config, streets, carsPaths, streetsMap, intersectionMap)
 
-		result := fmt.Sprintf("%d\n", len(outputs))
-		for _, out := range outputs {
-			result += fmt.Sprintf("%d\n", out.intersectionId)
-			result += fmt.Sprintf("%d\n", len(out.streetsTime))
-			for _, streetTime := range out.streetsTime {
-				result += fmt.Sprintf("%s %d\n", streetTime.name, streetTime.greenLigthDuration)
-
-			}
-		}
-
-		// output := buildOutput(result)
+		result := buildOutput(outputs)
 		// printResultMetrics(result)
 
 		ioutil.WriteFile(fmt.Sprintf("./result/%s.txt", fileName), []byte(result), 0644)

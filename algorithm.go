@@ -11,11 +11,16 @@ type output struct {
 	streetsTime    []StreetTime
 }
 
-func algorithm(config Config, streets []Street, carsPaths []CarsPaths, streetsMap map[string]Street, intersectionMap map[int]Intersection) []output {
+func algorithm(
+	config Config,
+	streets []*Street,
+	carsPaths []*CarsPaths,
+	streetsMap map[string]*Street,
+	intersectionMap map[int]*Intersection) []output {
 
 	out := make([]output, 0)
 
-	for interseciontId, intersections := range intersectionMap {
+	for interseciontID, intersections := range intersectionMap {
 		streetTimes := make([]StreetTime, 0)
 		for _, street := range intersections.incomingStreets {
 			streetTimes = append(streetTimes, StreetTime{
@@ -25,7 +30,7 @@ func algorithm(config Config, streets []Street, carsPaths []CarsPaths, streetsMa
 		}
 
 		out = append(out, output{
-			intersectionId: interseciontId,
+			intersectionId: interseciontID,
 			streetsTime:    streetTimes,
 		})
 	}

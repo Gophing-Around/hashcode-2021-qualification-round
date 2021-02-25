@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type Config struct {
 	simuDuration  int
 	intersections int
@@ -21,8 +23,8 @@ type CarsPaths struct {
 }
 
 type Intersection struct {
-	incomingStreets  map[string]Street
-	outcomingStreets map[string]Street
+	incomingStreets  map[string]*Street
+	outcomingStreets map[string]*Street
 }
 
 func buildConfig(inputSet string) Config {
@@ -36,15 +38,14 @@ func buildConfig(inputSet string) Config {
 	}
 }
 
-func buildStreets(c Config, lines []string) ([]Street, map[string]Street, map[int]Intersection) {
-	streets := make([]Street, c.nStreets)
-	streetMap := make(map[string]Street, 0)
-
-	intersectionMap := make(map[int]Intersection)
+func buildStreets(c Config, lines []string) ([]*Street, map[string]*Street, map[int]*Intersection) {
+	streets := make([]*Street, c.nStreets)
+	streetMap := make(map[string]*Street, 0)
+	intersectionMap := make(map[int]*Intersection)
 
 	for i := 0; i < c.nStreets; i++ {
 		parts := splitSpaces(lines[i])
-		street := Street{
+		street := &Street{
 			startIntersection: toint(parts[0]),
 			endIntersection:   toint(parts[1]),
 			name:              parts[2],
@@ -52,15 +53,21 @@ func buildStreets(c Config, lines []string) ([]Street, map[string]Street, map[in
 		}
 
 		intersectionA := intersectionMap[street.startIntersection]
+		if intersectionA == nil {
+			intersectionA = &Intersection{}
+		}
 		if intersectionA.outcomingStreets == nil {
-			intersectionA.outcomingStreets = make(map[string]Street)
+			intersectionA.outcomingStreets = make(map[string]*Street)
 		}
 		intersectionA.outcomingStreets[street.name] = street
 		intersectionMap[street.startIntersection] = intersectionA
 
 		intersectionB := intersectionMap[street.endIntersection]
+		if intersectionB == nil {
+			intersectionB = &Intersection{}
+		}
 		if intersectionB.incomingStreets == nil {
-			intersectionB.incomingStreets = make(map[string]Street)
+			intersectionB.incomingStreets = make(map[string]*Street)
 		}
 		intersectionB.incomingStreets[street.name] = street
 		intersectionMap[street.endIntersection] = intersectionB
@@ -71,12 +78,12 @@ func buildStreets(c Config, lines []string) ([]Street, map[string]Street, map[in
 	return streets, streetMap, intersectionMap
 }
 
-func buildCarsPaths(c Config, lines []string) []CarsPaths {
-	buildCars := make([]CarsPaths, c.nCars)
+func buildCarsPaths(c Config, lines []string) []*CarsPaths {
+	buildCars := make([]*CarsPaths, c.nCars)
 
 	for i := 0; i < c.nCars; i++ {
 		parts := splitSpaces(lines[i])
-		buildCars[i] = CarsPaths{
+		buildCars[i] = &CarsPaths{
 			nStreets:    toint(parts[0]),
 			streetNames: parts[1:],
 		}
@@ -85,6 +92,14 @@ func buildCarsPaths(c Config, lines []string) []CarsPaths {
 	return buildCars
 }
 
-func buildOutput(result int) string {
-	return "42"
+func buildOutput(outputs []output) string {
+	result := fmt.Sprintf("%d\n", len(outputs))
+	for _, out := range outputs {
+		result += fmt.Sprintf("%d\n", out.intersectionId)
+		result += fmt.Sprintf("%d\n", len(out.streetsTime))
+		for _, streetTime := range out.streetsTime {
+			result += fmt.Sprintf("%s %d\n", streetTime.name, streetTime.greenLigthDuration)
+		}
+	}
+	return result
 }
