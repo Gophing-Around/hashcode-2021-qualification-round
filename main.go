@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+
+	"github.com/fredmaggiowski/gowq"
 )
 
 func main() {
@@ -15,6 +17,8 @@ func main() {
 		// "c",
 		// "d",
 	}
+
+	gowq.NewWQ(10)
 
 	for _, fileName := range files {
 		fmt.Printf("****************** INPUT: %s\n", fileName)
