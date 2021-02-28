@@ -27,9 +27,15 @@ func algorithm(
 		var intersectionId int
 		var totTime int
 		var lastStreetName string
+		previouslyEnqueued := -1
 		for _, street := range carPath.streetNames {
 			street := streetsMap[street]
 			totTime += street.timeNeeded
+
+			if previouslyEnqueued < 0 {
+				previouslyEnqueued = street.firstQueue
+				street.firstQueue++
+			}
 
 			street.passingCars++
 
@@ -38,7 +44,7 @@ func algorithm(
 			streetsMap[street.name] = street
 		}
 
-		if totTime <= config.simuDuration {
+		if totTime + previouslyEnqueued < 9*config.simuDuration/10 {
 			street := streetsMap[lastStreetName]
 			intersection := intersectionMap[intersectionId]
 
@@ -48,6 +54,12 @@ func algorithm(
 
 			streetsMap[lastStreetName] = street
 			intersectionMap[intersectionId] = intersection
+		} else {
+			for _, street := range carPath.streetNames {
+				street := streetsMap[street]
+				street.passingCars--
+				streetsMap[street.name] = street
+			}
 		}
 	}
 

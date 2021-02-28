@@ -18,6 +18,7 @@ type Street struct {
 	score             int
 	passingCars				int
 	arrivingCars			int
+	firstQueue				int
 }
 
 type CarsPaths struct {
