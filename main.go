@@ -47,7 +47,7 @@ func main() {
 
 func sortIntersections(list []*Intersection) []*Intersection {
 	sort.Slice(list, func(i, j int) bool {
-		return len(list[i].outcomingStreets) > len(list[j].outcomingStreets)
+		return list[i].arrivingCars > list[j].arrivingCars
 	})
 	return list
 }

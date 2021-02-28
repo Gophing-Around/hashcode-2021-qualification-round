@@ -1,5 +1,7 @@
 package main
 
+import "sort"
+
 type StreetTime struct {
 	name               string
 	greenLigthDuration int
@@ -24,27 +26,38 @@ func algorithm(
 	for _, carPath := range carsPaths {
 		var intersectionId int
 		var totTime int
+		var lastStreetName string
 		for _, street := range carPath.streetNames {
 			street := streetsMap[street]
 			totTime += street.timeNeeded
 
+			street.passingCars++
+
 			intersectionId = street.endIntersection
+			lastStreetName = street.name
+			streetsMap[street.name] = street
 		}
 
 		if totTime <= config.simuDuration {
+			street := streetsMap[lastStreetName]
 			intersection := intersectionMap[intersectionId]
+
+			street.arrivingCars++
+			street.passingCars--
 			intersection.arrivingCars++
+
+			streetsMap[lastStreetName] = street
 			intersectionMap[intersectionId] = intersection
 		}
 	}
 
+	visited := make(map[int]bool)
 	for _, intersection := range intersectionsList {
-		visited := make(map[int]bool)
 		dfs(
 			visited,
 			config.simuDuration,
 			intersection,
-			intersection.arrivingCars,
+			0,
 			intersection,
 			intersectionMap,
 		)
@@ -53,22 +66,35 @@ func algorithm(
 	for _, intersection := range intersectionsList {
 		streetTimes := make([]StreetTime, 0)
 		totScore := 0
+		totPassingCars := 0
 
 		for _, street := range intersection.incomingStreets {
 			totScore += int(street.score)
+			totPassingCars += street.passingCars
 		}
-		if totScore == 0 {
+		if totScore == 0 || totPassingCars == 0 {
 			continue
 		}
 
-		a := len(intersection.incomingStreets) / len(intersection.outcomingStreets)
-		if a == 0 {
-			a = 1
+		incomingStreets := make([]*Street, 0)
+		for _, street := range intersection.incomingStreets {
+			incomingStreets = append(incomingStreets, street)
 		}
 
-		for _, street := range intersection.incomingStreets {
-			if street.score == 0 {
+		sort.Slice(incomingStreets, func(i, j int) bool {
+			valueA := incomingStreets[i]
+			valueB := incomingStreets[j]
+			return valueA.passingCars > valueB.passingCars
+		})
+
+		for _, street := range incomingStreets {
+			if street.score == 0 || street.passingCars == 0 {
 				continue
+			}
+
+			a := street.passingCars * config.simuDuration / ( totPassingCars * 100 )
+			if a <= 0 || a > config.simuDuration {
+				a = 1
 			}
 
 			streetTimes = append(streetTimes, StreetTime{
@@ -95,9 +121,14 @@ func dfs(
 	startIntersection *Intersection,
 
 	intersectionMap map[int]*Intersection,
-) int {
+) {
+	if score <= intersection.maxScore {
+		return
+	}
+	intersection.maxScore = score
+
 	if visited := visited[intersection.id]; visited {
-		return score
+		return
 	}
 
 	visited[intersection.id] = true
@@ -105,23 +136,27 @@ func dfs(
 	// score += intersection.arrivingCars // TODO
 
 	for streetName, incomingStreet := range intersection.incomingStreets {
-		streetScore := dfs(
+		if incomingStreet.passingCars == 0 {
+			continue
+		}
+
+		streetScore := score + 3*incomingStreet.arrivingCars + incomingStreet.passingCars - incomingStreet.timeNeeded
+		dfs(
 			visited,
 			remainingTime-incomingStreet.timeNeeded,
 			// incomingStreet,
 			intersectionMap[incomingStreet.startIntersection],
-			score+int(intersectionMap[incomingStreet.startIntersection].arrivingCars),
+			streetScore,
 
 			startIntersection,
 			intersectionMap,
 		)
-		// score += streetScore
+		
 		incomingStreet.score = streetScore
 		intersection.incomingStreets[streetName] = incomingStreet
 	}
 
-	// visited[intersection.id] = false
-	return score
+	visited[intersection.id] = false
 }
 
 func pickBestIntersection(intersectionsList []*Intersection) *Intersection {

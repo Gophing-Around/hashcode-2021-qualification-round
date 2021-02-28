@@ -16,6 +16,8 @@ type Street struct {
 	name              string
 	timeNeeded        int
 	score             int
+	passingCars				int
+	arrivingCars			int
 }
 
 type CarsPaths struct {
@@ -28,6 +30,7 @@ type Intersection struct {
 	arrivingCars     int
 	incomingStreets  map[string]*Street
 	outcomingStreets map[string]*Street
+	maxScore				 int
 }
 
 func buildConfig(inputSet string) Config {
@@ -83,6 +86,7 @@ func buildStreets(c Config, lines []string) ([]*Street, map[string]*Street, map[
 	}
 
 	for _, intersection := range intersectionMap {
+		intersection.maxScore = -1
 		intersectionsList = append(intersectionsList, intersection)
 	}
 
